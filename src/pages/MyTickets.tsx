@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAppContext } from '../context/AppContext';
+import { useAuth } from '../context/AuthContext';
 import { Modal } from '../components/Modal';
 import { supabase } from '../lib/supabase';
 
@@ -44,6 +45,7 @@ const STATUS_BADGE: Record<TicketStatus, string> = {
 // ─── Componente ───────────────────────────────────────────────────────────────
 export function MyTickets() {
   const { addToast } = useAppContext();
+  const { session }  = useAuth();
 
   const [tickets,      setTickets]      = useState<Ticket[]>([]);
   const [loading,      setLoading]      = useState(true);
@@ -102,13 +104,15 @@ export function MyTickets() {
   // ─── Salvar nota ───────────────────────────────────────────────────────────
   const handleSaveNote = async () => {
     if (!note.trim()) { addToast('error', 'Campo Vazio', 'Escreva uma nota antes de salvar.'); return; }
+    if (!session?.user?.id) { addToast('error', 'Sessão Expirada', 'Faça login novamente.'); return; }
+    
     try {
       const { error } = await (supabase as any)
         .from('ticket_notes')
         .insert({
           ticket_id: noteModal,
           content:   note.trim(),
-          author_id: '00000000-0000-0000-0000-000000000000', // placeholder até auth
+          author_id: session.user.id,
         });
 
       if (error) throw error;

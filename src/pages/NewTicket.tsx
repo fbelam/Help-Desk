@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
+import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 
 type Priority = 'Alta' | 'Média' | 'Baixa';
@@ -19,6 +20,7 @@ const CATEGORIES: CategoryOption[] = [
 
 export function NewTicket() {
   const { addToast } = useAppContext();
+  const { session }  = useAuth();
   const navigate = useNavigate();
 
   const [subject,     setSubject]     = useState('');
@@ -44,6 +46,10 @@ export function NewTicket() {
       addToast('error', 'Descrição Insuficiente', 'A descrição deve ter ao menos 20 caracteres.');
       return false;
     }
+    if (!session?.user?.id) {
+      addToast('error', 'Sessão Expirada', 'Você precisa estar logado para criar um chamado.');
+      return false;
+    }
     return true;
   };
 
@@ -62,7 +68,7 @@ export function NewTicket() {
           description:  description.trim(),
           priority,
           status:       'Aberto',
-          requester_id: '00000000-0000-0000-0000-000000000000', // placeholder até ter auth
+          requester_id: session!.user.id,
           assigned_to:  null,
           sla_deadline: null,
         })
