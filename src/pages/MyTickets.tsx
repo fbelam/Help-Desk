@@ -73,7 +73,22 @@ export function MyTickets() {
     }
   }, [addToast]);
 
-  useEffect(() => { fetchTickets(); }, [fetchTickets]);
+  // ─── Real-time e Inicialização ─────────────────────────────────────────────
+  useEffect(() => {
+    fetchTickets();
+
+    // Inscrever em mudanças na tabela tickets
+    const channel = supabase
+      .channel('public:tickets')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'tickets' }, () => {
+        fetchTickets();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [fetchTickets]);
 
   // ─── Atualizar status ──────────────────────────────────────────────────────
   const updateStatus = async (id: string, newStatus: TicketStatus) => {
