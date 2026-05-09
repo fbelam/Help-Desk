@@ -67,6 +67,11 @@ export default defineConfig([
         tsconfigRootDir: import.meta.dirname,
       },
       // other options...
+
+
+      Perfil	E-mail	Senha
+👑 Admin	admin@saharasupport.com	Admin@2024
+👤 Usuário Comum	carlos@saharasupport.com	Carlos@2024
     },
   },
 ])
